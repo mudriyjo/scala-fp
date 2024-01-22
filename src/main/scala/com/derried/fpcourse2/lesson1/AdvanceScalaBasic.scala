@@ -2,7 +2,7 @@ package com.derried.fpcourse2.lesson1
 
 import scala.util.Try
 
-object AdvanceScala extends App {
+object AdvanceScalaBasic extends App {
   // Syntactic sugar
   // #1 Single arg method calls
   def printName(name: String) = println(s"Hello $name")
