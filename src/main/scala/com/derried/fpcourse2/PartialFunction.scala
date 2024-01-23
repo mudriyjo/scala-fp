@@ -1,4 +1,4 @@
-package com.derried.fpcourse2.lesson1
+package com.derried.fpcourse2
 
 object PartialFunction extends App {
 
