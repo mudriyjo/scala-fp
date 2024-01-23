@@ -1,6 +1,6 @@
-package com.derried.fpcourse2.lesson1
+package com.derried.fpcourse2
 
-import com.derried.fpcourse2.lesson1.AdvancePatternMatching.{BigNumber, EvenNumber, SingleDigit}
+import AdvancePatternMatching.{BigNumber, EvenNumber, SingleDigit}
 
 object AdvancePatternMatching extends App {
 

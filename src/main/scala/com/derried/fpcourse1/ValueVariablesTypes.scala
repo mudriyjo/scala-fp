@@ -1,4 +1,4 @@
-package com.derried.fpcourse1.lesson1
+package com.derried.fpcourse1
 
 object ValueVariablesTypes extends App{
     // Vals are immutable
