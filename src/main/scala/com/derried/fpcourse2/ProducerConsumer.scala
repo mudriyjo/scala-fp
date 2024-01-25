@@ -166,5 +166,120 @@ object ProducerConsumer extends App {
     println(queue)
   }
 
-  queueMultiplyProducerConsumer()
+//  queueMultiplyProducerConsumer()
+
+  /*
+  1. Create a deadlock
+  2. Create a livelock
+   */
+
+  class Deadlock(val num: Int) {
+    private var state: Int = 0
+    def updateState(deadlock: Option[Deadlock], newState: Int): Unit = {
+      state = newState
+      println(s"[deadlock #$num] state updated, state is: ${state}")
+      this.synchronized {
+        deadlock.foreach(d => {
+          println(s"[deadlock #$num] go to next state...")
+          Thread.sleep(3000)
+          d.updateState(None, newState)
+        })
+      }
+    }
+  }
+
+  object Deadlock {
+    def deadlock = {
+      val deadlock1 = new Deadlock(1)
+      val deadlock2 = new Deadlock(2)
+      val thread1 = new Thread(() => deadlock1.updateState(Some(deadlock2), 10))
+      val thread2 = new Thread(() => deadlock2.updateState(Some(deadlock1), 20))
+      thread1.start()
+      thread2.start()
+      thread1.join()
+      thread2.join()
+    }
+  }
+
+//  Deadlock.deadlock
+  class LiveLock(val num: Int) {
+    private var state: Int = num * 10
+    private var isLocked: Option[Thread] = None
+    def lock(t: Thread): Boolean = {
+      if (isLocked.isEmpty || isLocked.get.eq(t)) {
+        isLocked = Some(t)
+        true
+      } else {
+        false
+      }
+    }
+    def unlock(t: Thread): Boolean = {
+      if (isLocked.nonEmpty && isLocked.get.eq(t)) {
+        isLocked = None
+        true
+      } else {
+        false
+      }
+    }
+    def update(newState: Int) = state = newState
+  }
+
+  object LiveLock {
+    def liveLock() = {
+      val liveLock1 = new LiveLock(1)
+      val liveLock2 = new LiveLock(2)
+      val thread1 = new Thread(() => {
+        val t = Thread.currentThread()
+        while(true) {
+          println(s"[Thread #1] try lock 1....")
+          if (liveLock1.lock(t)) {
+            println(s"[Thread #1] locked 1....")
+            Thread.sleep(1000)
+            println(s"[Thread #1] try lock 2....")
+            if(liveLock2.lock(t)) {
+              println(s"[Thread #1] locked 2....")
+              Thread.sleep(1000)
+              liveLock1.update(1)
+              liveLock2.update(1)
+            }
+            println(s"[Thread #1] try to unlock 1....")
+            liveLock1.unlock(t)
+            Thread.sleep(1000)
+            println(s"[Thread #1] try to unlock 2....")
+            liveLock2.unlock(t)
+          }
+        }
+      })
+
+      val thread2 = new Thread(() => {
+        val t = Thread.currentThread()
+        while (true) {
+          println(s"[Thread #2] try lock 2....")
+          if (liveLock2.lock(t)) {
+            println(s"[Thread #2] locked 2....")
+            Thread.sleep(1000)
+            println(s"[Thread #2] try lock 1....")
+            if (liveLock1.lock(t)) {
+              println(s"[Thread #2] locked 1....")
+              Thread.sleep(1000)
+              liveLock1.update(1)
+              liveLock2.update(1)
+            }
+            println(s"[Thread #2] try to unlock 1....")
+            liveLock2.unlock(t)
+            Thread.sleep(1000)
+            println(s"[Thread #2] try to unlock 2....")
+            liveLock1.unlock(t)
+          }
+        }
+      })
+
+      thread1.start()
+      thread2.start()
+      thread1.join()
+      thread2.join()
+    }
+  }
+
+  LiveLock.liveLock()
 }
