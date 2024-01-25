@@ -101,6 +101,8 @@ object ProducerConsumer extends App {
       queue.notify()
       res
     }
+
+    override def toString: String = s"Queue(${queue.mkString(",")})"
   }
 
   def queueProducerConsumer() = {
@@ -128,5 +130,41 @@ object ProducerConsumer extends App {
     producer.join()
   }
 
-  queueProducerConsumer()
+//  queueProducerConsumer()
+
+/*
+  producer 1 -> [ ? ? ? ] -> consumer1
+  producer2 -----^    ^----- consumer2
+  .....
+ */
+
+  def queueMultiplyProducerConsumer() = {
+    val queue = new QueuePrCns()
+    val consumers = (1 to 10).map(_ => new Thread(() => {
+        (1 to 10).foreach(_ => {
+          Thread.sleep(1500)
+          println("[consumer] consume variable: " + queue.getValue)
+        })
+      })
+    )
+
+    val producers = (1 to 10).map(_ =>
+      new Thread(() => {
+      (1 to 10).foreach(_ => {
+        println("[producer] Hard work started...")
+        Thread.sleep(500)
+        val result = Random.nextInt(42)
+        println("[producer] calculated value is: " + result)
+        queue.addValue(result)
+      })
+    }))
+
+    consumers.foreach(_.start())
+    producers.foreach(_.start())
+    consumers.foreach(_.join())
+    producers.foreach(_.join())
+    println(queue)
+  }
+
+  queueMultiplyProducerConsumer()
 }
