@@ -1,8 +1,10 @@
 package com.derried.fpcourse2
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future, Promise}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
+import scala.concurrent.duration.*
+
 object FuturePromises extends App {
 
   def longComputation = {
@@ -98,4 +100,53 @@ object FuturePromises extends App {
 
   socialNetworkExecExample3
   Thread.sleep(2000)
+
+  // SimpleBanking app
+  case class User(name: String)
+  case class Transaction(from: String, to: String, amount: Double, status: String)
+
+  object BankingApp {
+    val name = "Rock the JVM app"
+
+    def fetchUser(name: String): Future[User] = Future {
+      // Simulate computation
+      Thread.sleep(200)
+      User(name)
+    }
+
+    def createTransaction(from: User, to: String, amount: Double): Future[Transaction] = Future {
+      // Simulate processes...
+      Thread.sleep(500)
+      Transaction(from.name, to, amount, "SUCCESS")
+    }
+
+    def makePurchase(userName: String, merchant: String, item: String, amount: Double): String = {
+      val transactionStatusFuture = for {
+        user <- fetchUser(userName)
+        transaction <- createTransaction(user, merchant, amount)
+      } yield transaction.status
+
+      Await.result(transactionStatusFuture, 2.seconds)
+    }
+  }
+
+  println(BankingApp.makePurchase("Alex", "Rock the JVM shop", "Iphone 12", 3000))
+
+  // Producer Consumer example through Promises
+  val promise = Promise[Int]()
+  val future = promise.future
+
+  future.onComplete{
+    case Success(result) => println(s"[consumer] Get result: $result")
+  }
+
+  val newThread = new Thread(() => {
+    println("[producer] crunch numbers...")
+    Thread.sleep(500)
+    println("[producer] send result")
+    promise.success(42)
+    ()
+  })
+
+  newThread.start()
 }
