@@ -31,7 +31,7 @@ object TypeClasses extends App {
     def serialize(value: T): String
   }
 
-  object UserSerializer extends HTMLSerializer[User] {
+  implicit object UserSerializer extends HTMLSerializer[User] {
     override def serialize(user: User): String = s"<div>Hello, ${user.name} (${user.age} yo) <mailto='${user.email}'></div>"
   }
 
@@ -50,5 +50,12 @@ object TypeClasses extends App {
   object DateSerializer extends HTMLSerializer[Date] {
     override def serialize(date: Date): String = s"<div>today is: ${date}</div>"
   }
-  
+
+  // Part 3
+  implicit class HTMLEnrichment[T](val value: T) {
+    def toHTML(implicit serializer: HTMLSerializer[T]): String = serializer.serialize(value)
+  }
+
+  println(user.toHTML)
+  println(user.toHTML(PrivateUserSerializer))
 }
