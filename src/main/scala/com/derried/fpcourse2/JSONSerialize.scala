@@ -3,10 +3,9 @@ package com.derried.fpcourse2
 import java.util.Date
 
 object JSONSerialize extends App {
+  
   case class User(name: String, age: Int)
-
   case class Post(title: String, text: String, createdAt: Date)
-
   case class Feed(user: User, posts: List[Post])
 
   // Intermediate representation
@@ -17,7 +16,7 @@ object JSONSerialize extends App {
   final case class JSONString(value: String) extends JSONValue {
     override def serialize: String = "\"" + value + "\""
   }
-
+  
   final case class JSONNumber(value: Int) extends JSONValue {
     override def serialize: String = value.toString
   }
