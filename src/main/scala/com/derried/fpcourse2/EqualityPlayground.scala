@@ -1,6 +1,8 @@
 package com.derried.fpcourse2
 
-class EqualityPlayground {
+import com.derried.fpcourse2.TypeClasses.User
+
+object EqualityPlayground extends App {
   /* Exercise
       Equal
      */
@@ -24,4 +26,18 @@ class EqualityPlayground {
   val user2 = User("John", 20, "john@rockthejvm.com")
 
   println(s"the user is equal: ${Equal(user1, user2)}")
+
+  /*
+    Exercise type Enrichment for Equality
+    ===(anotherValue:T)
+    !==(anotherValue:T)
+   */
+
+  implicit class EqualityEnrichment[T](val value: T) {
+    def ===(anotherValue: T)(implicit equal: Equal[T]): Boolean = equal.isEqual(value, anotherValue)
+    def !==(anotherValue: T)(implicit equal: Equal[T]): Boolean = !(===(anotherValue))
+  }
+
+  println(s"the user is equal: ${user1 === user2}")
+  println(s"the user is not equal: ${user1 !== user2}")
 }
